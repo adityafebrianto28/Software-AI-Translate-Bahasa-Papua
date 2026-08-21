@@ -1,0 +1,1698 @@
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --bg-deep:       #041e21;
+  --bg-mid:        #0a3438;
+  --bg-panel:      rgba(9, 46, 51, 0.62);
+  --bg-panel-2:    rgba(6, 32, 36, 0.55);
+  --line:          rgba(88, 214, 214, 0.22);
+  --line-strong:   rgba(88, 214, 214, 0.45);
+
+  --cyan:          #3fe0e0;
+  --cyan-bright:   #7bf3f3;
+  --cyan-dim:      #1f8f8f;
+  --amber:         #f2b544;
+  --red:           #ff5f5f;
+  --green:         #57e39a;
+
+  --text-hi:       #eafcfc;
+  --text-mid:      #a9d6d6;
+  --text-dim:      #6f9d9d;
+
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 7px;
+
+  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+
+  --shadow-panel: 0 1px 0 rgba(255,255,255,0.03) inset, 0 20px 40px -20px rgba(0,0,0,0.55);
+}
+
+*, *::before, *::after{ box-sizing: border-box; }
+
+html{ color-scheme: dark; }
+
+/* ============================================================
+   DESKTOP-SCALE WRAPPER (lihat script di index.html)
+   #scaleOuter = wadah nyata di halaman, lebarnya ikut layar HP.
+   #scaleInner = seluruh isi app, dipaksa selebar DESIGN_WIDTH lalu
+   di-scale oleh JS supaya tampilan di HP sama seperti di Windows.
+
+   Catatan: skala punya batas MINIMUM (lihat MIN_SCALE di index.html)
+   supaya elemen seperti waterfall/spectrum tidak ikut mengecil terus
+   di layar sempit -- begitu skala mentok di batas minimum, sisa lebar
+   yang tidak muat cukup di-scroll ke samping (persis seperti membuka
+   "versi desktop" sebuah situs di HP), bukan dipaksa makin diperkecil.
+   ============================================================ */
+#scaleOuter{
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+#scaleInner{
+  transform-origin: top left;
+  min-height: 100vh;
+}
+
+body{
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-display);
+  color: var(--text-hi);
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(63,224,224,0.10), transparent 60%),
+    radial-gradient(900px 500px at 100% 10%, rgba(63,224,224,0.06), transparent 55%),
+    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 55%, #06282b 100%);
+  background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ============================================================ */
+/* 1. LAYOUT UTAMA, HEADER, & NAVIGASI (LEBAR KONSISTEN) */
+/* ============================================================ */
+.app-header,
+.top-nav-bar,
+.pages-wrap,
+.hero-panel,
+.home-grid,
+.home-about-panel,
+.radio-console,
+.console {
+  max-width: 1400px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+/* Menjajarkan Logo, Judul, dan Subtitle di Header */
+.header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Padding kiri-kanan yang sama persis agar garis tepi sejajar */
+.header-title-row,
+.top-nav-bar {
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+
+/* ============================================================ */
+/* 2. HALAMAN AUTO TRANSLATE (.console) */
+/* ============================================================ */
+.console {
+  display: flex;
+  gap: 24px;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.console .col-left,
+.console .col-right {
+  flex: 1;
+  box-sizing: border-box;
+}
+
+/* ============================================================ */
+/* 3. SIDEBAR & TOMBOL NUDGE SET RADIO (AGAR TIDAK KEPOTONG) */
+/* ============================================================ */
+.radio-sidebar {
+  width: 380px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.sidebar-body {
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Memperbaiki tombol nudge agar muat 4 kolom tanpa terpotong */
+.nudge-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.nudge-row .btn-nudge {
+  width: 100%;
+  padding: 8px 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* ============================================================ */
+/* 4. EFEK SCANLINE / DEKORATIF */
+/* ============================================================ */
+.scanlines {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(255,255,255,0.012) 0px,
+    rgba(255,255,255,0.012) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+/* ============================================================
+   HEADER
+   ============================================================ */
+/* 1. Batasi lebar App Header agar sama dengan konten lain */
+.app-header {
+  max-width: 1360px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* 2. Jadikan top-nav-bar mengikuti lebar penuh dari header dengan padding yang pas */
+.top-nav-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  max-width: 100%;
+  margin: 0 24px; /* Memberikan jarak agar tidak menempel di ujung kotak */
+  box-sizing: border-box;
+}
+
+/* 3. Pastikan baris judul header memiliki box-sizing dan margin yang selaras */
+.header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  box-sizing: border-box;
+}
+
+.header-inner{ max-width: 1180px; margin: 0 auto; }
+
+.brand{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.brand-dot{
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px 1px rgba(87,227,154,0.7);
+}
+.brand-dot.offline{ background: var(--red); box-shadow: 0 0 8px 1px rgba(255,95,95,0.7); }
+
+.title{
+  margin: 0;
+  font-size: 34px; /* sebelumnya clamp(...vw...) -- diganti tetap agar konsisten saat di-scale ke HP */
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.title-lang.from{ color: var(--text-hi); }
+.title-lang.to{ color: var(--cyan-bright); text-shadow: 0 0 22px rgba(123,243,243,0.35); }
+.title-arrow{ width: 22px; height: 22px; color: var(--cyan); flex-shrink: 0; }
+
+.subtitle{
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.console{
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 0 40px;
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.col{ display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.col-full{ grid-column: 1 / -1; }
+
+/* DINONAKTIFKAN (mobile disamakan dengan desktop lewat scaling
+   #scaleOuter/#scaleInner di index.html, bukan lewat susun-ulang CSS):
+@media (max-width: 880px){
+  .console{ grid-template-columns: 1fr; }
+}
+*/
+
+/* ============================================================
+   PANEL
+   ============================================================ */
+.panel{
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 18px 18px 20px;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow-panel);
+}
+
+.panel-title{
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.panel-hint{
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+.panel-title {
+  color: #00f0ff; /* Cyan Neon */
+  font-family: 'Space Grotesk', 'JetBrains Mono', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Garis kecil pemanis di sebelah judul */
+.panel-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  background: #00f0ff;
+  border-radius: 2px;
+  box-shadow: 0 0 8px #00f0ff;
+}
+
+/* 3. Baris Input & Pencarian */
+.manual-row {
+  margin-bottom: 12px !important;
+}
+
+/* Input Teks (Cari & ketik bahasa...) */
+.input {
+  width: 100%;
+  background-color: #030b0e;
+  border: 1px solid #1a424c;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #e2f1f5;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+}
+
+.input::placeholder {
+  color: #4f737d;
+}
+
+.input:focus {
+  border-color: #00f0ff;
+  background-color: #051217;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+}
+
+/* 4. Dropdown Select (Ambai, Biak, Dani, dll.) */
+.device-select {
+  width: 100%;
+  background-color: #030b0e;
+  border: 1px solid #1a424c;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #00ffaa; /* Emerald Accent untuk opsi aktif */
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  
+  /* Custom Panah Dropdown */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2000ffaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+.device-select:focus, 
+.device-select:hover {
+  border-color: #00ffaa;
+  box-shadow: 0 0 10px rgba(0, 255, 170, 0.2);
+}
+
+/* Styling Pilihan di dalam Dropdown (Menu Pop-up) */
+.device-select option {
+  background-color: #071519;
+  color: #e2f1f5;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 10px;
+}
+
+/* ============================================================
+   FREQUENCY / BANDWIDTH READOUT
+   ============================================================ */
+.readout{
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.15));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
+}
+
+.readout-value{
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 32px; /* sebelumnya clamp(...vw...) -- diganti tetap agar konsisten saat di-scale ke HP */
+  color: var(--cyan-bright);
+  text-shadow: 0 0 18px rgba(63,224,224,0.45);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.readout-unit{
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-mid);
+}
+
+.readout-sub{
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin: 0 2px 16px;
+}
+
+.readout-with-mode{
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ============================================================
+   SLIDER
+   ============================================================ */
+.slider-wrap{ margin-bottom: 18px; }
+
+.slider{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cyan-dim), var(--cyan) var(--fill, 50%), rgba(255,255,255,0.08) var(--fill, 50%));
+  outline: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  background: var(--cyan-bright);
+  border: 2px solid #04292c;
+  box-shadow: 0 0 0 4px rgba(63,224,224,0.18), 0 0 10px rgba(123,243,243,0.6);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.slider::-webkit-slider-thumb:hover{ transform: scale(1.12); }
+
+.slider::-moz-range-thumb{
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  background: var(--cyan-bright);
+  border: 2px solid #04292c;
+  box-shadow: 0 0 10px rgba(123,243,243,0.6);
+  cursor: pointer;
+}
+.slider::-moz-range-track{
+  height: 6px; border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+}
+
+.slider-scale{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn{
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(63,224,224,0.06);
+  color: var(--text-hi);
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.08s ease, border-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.btn svg{ width: 16px; height: 16px; flex-shrink: 0; }
+.btn:hover{ background: rgba(63,224,224,0.14); border-color: var(--cyan); }
+.btn:active{ transform: translateY(1px); }
+.btn:focus-visible{ outline: 2px solid var(--cyan-bright); outline-offset: 2px; }
+
+.btn-block{ width: 100%; }
+
+.btn-primary{
+  background: linear-gradient(180deg, #2bb9b9, #1c8f8f);
+  border-color: #2bb9b9;
+  color: #04191b;
+  font-weight: 700;
+  box-shadow: 0 6px 18px -8px rgba(43,185,185,0.65);
+}
+.btn-primary:hover{ background: linear-gradient(180deg, #38cbcb, #22a0a0); }
+
+.btn-secondary{
+  background: rgba(63,224,224,0.1);
+  border-color: var(--line-strong);
+  color: var(--cyan-bright);
+}
+
+.btn-ghost{
+  background: transparent;
+  border-color: var(--line);
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 6px 12px;
+}
+.btn-ghost:hover{ color: var(--text-hi); }
+
+.btn-nudge{
+  flex: 1 1 0;
+  padding: 8px 6px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.btn-set{
+  background: rgba(63,224,224,0.14);
+  border-color: var(--cyan);
+  color: var(--cyan-bright);
+  padding: 10px 16px;
+}
+
+.btn-icon{
+  padding: 9px;
+  aspect-ratio: 1;
+}
+
+.nudge-row{
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.btn-pair{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn-pair .btn{ flex: 1 1 180px; }
+
+/* ============================================================
+   MANUAL INPUT + PRESETS
+   ============================================================ */
+.manual-row{ margin-bottom: 16px; }
+
+.manual-label{
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-bottom: 7px;
+  letter-spacing: 0.02em;
+}
+
+.manual-input-group{
+  display: flex;
+  gap: 8px;
+}
+
+.input{
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-hi);
+  padding: 9px 12px;
+  min-width: 0;
+}
+.input::placeholder{ color: var(--text-dim); }
+.input:focus{ outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(63,224,224,0.15); }
+
+.preset-label{
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.preset-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip{
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  color: var(--text-mid);
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chip:hover{ border-color: var(--cyan); color: var(--cyan-bright); }
+.chip.active{
+  background: rgba(63,224,224,0.18);
+  border-color: var(--cyan);
+  color: var(--cyan-bright);
+}
+
+/* ============================================================
+   MODE SELECT
+   ============================================================ */
+.mode-select-wrap{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mode-select-label{
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.mode-select{
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 12.5px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--line-strong);
+  color: var(--cyan-bright);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  cursor: pointer;
+}
+.mode-select:focus{ outline: none; border-color: var(--cyan); }
+
+/* ============================================================
+   DEVICE SELECT / RMS METER
+   ============================================================ */
+.device-row{
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.device-select{
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--line);
+  color: var(--text-hi);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.device-select:focus{ outline: none; border-color: var(--cyan); }
+
+.rms-row{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-mid);
+  margin-bottom: 10px;
+}
+
+.rms-label{ display: inline-flex; align-items: center; gap: 6px; }
+
+.dot{ width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-red{ background: var(--red); box-shadow: 0 0 6px rgba(255,95,95,0.8); }
+
+.rms-value{ color: var(--cyan-bright); font-weight: 600; }
+
+.threshold-toggle{
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 11.5px;
+}
+.threshold-toggle input{ accent-color: var(--cyan); }
+
+.meter-track{
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.meter-fill{
+  height: 100%;
+  width: 4%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cyan-dim), var(--cyan) 70%, var(--amber));
+  transition: width 0.12s ease-out;
+}
+
+.status-row{ display: flex; justify-content: flex-end; margin-bottom: 16px; }
+
+.status-pill{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(87,227,154,0.14);
+  border: 1px solid rgba(87,227,154,0.4);
+  color: var(--green);
+}
+.status-pill.busy{
+  background: rgba(242,181,68,0.15);
+  border-color: rgba(242,181,68,0.45);
+  color: var(--amber);
+}
+
+/* ============================================================
+   FILE UPLOAD
+   ============================================================ */
+.file-row{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.file-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(63,224,224,0.1);
+  border: 1px solid var(--line-strong);
+  color: var(--cyan-bright);
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.file-btn:hover{ background: rgba(63,224,224,0.18); }
+.file-btn svg{ width: 15px; height: 15px; }
+
+.file-name{
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+
+/* ============================================================
+   TEXTAREAS
+   ============================================================ */
+.textarea{
+  width: 100%;
+  min-height: 190px;
+  resize: vertical;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-hi);
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.textarea::placeholder{ color: var(--text-dim); }
+.textarea:focus{ outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(63,224,224,0.12); }
+
+.textarea-readout{
+  background: rgba(0,0,0,0.32);
+  color: var(--cyan-bright);
+}
+
+/* ============================================================
+   SPLIT PANE (whisper / translation)
+   ============================================================ */
+.panel-split{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+/* DINONAKTIFKAN (lihat catatan di atas):
+@media (max-width: 720px){
+  .panel-split{ grid-template-columns: 1fr; }
+  .split-divider{ display: none; }
+}
+*/
+
+.split-pane{ min-width: 0; }
+
+.split-divider{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 30px;
+}
+.divider-icon{
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cyan);
+  font-size: 15px;
+  background: rgba(63,224,224,0.06);
+}
+
+.checkbox-row{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-mid);
+  cursor: pointer;
+}
+.checkbox-row input{ accent-color: var(--cyan); }
+
+/* ============================================================
+   LOG
+   ============================================================ */
+.panel-log{ padding-bottom: 16px; }
+
+.log-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.log-header .panel-title{ margin: 0; }
+
+.log-box{
+  height: 150px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-mid);
+}
+
+.log-line{ display: flex; gap: 8px; }
+.log-time{ color: var(--text-dim); flex-shrink: 0; }
+.log-line.type-ok .log-msg{ color: var(--green); }
+.log-line.type-warn .log-msg{ color: var(--amber); }
+.log-line.type-err .log-msg{ color: var(--red); }
+.log-line.type-info .log-msg{ color: var(--text-mid); }
+
+.log-box::-webkit-scrollbar{ width: 8px; }
+.log-box::-webkit-scrollbar-thumb{ background: var(--line-strong); border-radius: 999px; }
+.log-box::-webkit-scrollbar-track{ background: transparent; }
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce){
+  *{ transition: none !important; animation: none !important; }
+}
+
+/* ============================================================
+   FOCUS VISIBILITY (global safety net)
+   ============================================================ */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   DISABLED STATES (dipakai saat menunggu respons backend)
+   ============================================================ */
+.btn:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.device-select:disabled{ opacity: 0.6; }
+[hidden]{ display: none !important; }
+/* ============================================================
+   NAV HEADER (multi-page: Home / Set Radio / Auto Translate)
+   Struktur 2 baris: (1) judul besar, (2) bar navigasi di bawahnya
+   ============================================================ */
+.app-header{ text-align: left; padding: 22px 24px 0; }
+
+.header-title-row{
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+}
+
+
+.brand-text{ display: flex; flex-direction: column; line-height: 1.22; gap: 2px; }
+
+.brand-mark {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 14px rgba(63,224,224,0.25));
+}
+.brand-mark-svg{ width: 100%; height: 100%; }
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 11px; /* Menyesuaikan sudut melengkung */
+}
+
+.brand-title{
+  font-weight: 700;
+  font-size: 30px; /* sebelumnya clamp(...vw...) -- diganti tetap agar konsisten saat di-scale ke HP */
+  letter-spacing: 0.01em;
+    color:#fff;
+    text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.044),
+        0 0 25px rgba(0,255,255,.2);
+        background: linear-gradient(90deg, var(--text-hi) 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-subtitle{
+    font-size:13px;
+    color:#7cf7ff;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    text-shadow:
+        0 0 10px rgba(124,247,255,.7),
+        0 0 25px rgba(0,255,255,.4);
+        font-weight: 500;
+}
+
+.brand-status{
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-panel-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.top-nav-bar{
+  background: linear-gradient(90deg, rgba(15,91,94,0.55), rgba(9,52,58,0.35));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.top-nav-bar > *{ flex-shrink: 0; }
+
+.nav-home{
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-panel-2);
+  color: var(--cyan-bright);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.nav-home[aria-selected="true"]{
+  background: var(--cyan-dim);
+  border-color: var(--cyan-bright);
+  color: var(--text-hi);
+  box-shadow: 0 0 0 3px rgba(63,224,224,0.15);
+}
+.nav-home svg{ width: 17px; height: 17px; }
+
+.nav-pill{
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-panel-2);
+  color: var(--text-mid);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.nav-pill[aria-selected="true"]{
+  background: var(--cyan-dim);
+  border-color: var(--cyan-bright);
+  color: var(--text-hi);
+  box-shadow: 0 0 0 3px rgba(63,224,224,0.15);
+}
+
+/* DINONAKTIFKAN (lihat catatan di atas):
+@media (max-width: 640px){
+  .header-title-row{ flex-wrap: wrap; }
+  .brand-status{ margin-left: 0; order: 3; }
+  .top-nav-bar{ overflow-x: auto; }
+}
+*/
+
+/* ============================================================
+   PAGES
+   ============================================================ */
+.pages-wrap{ position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; padding: 22px 24px 60px; }
+.page[hidden]{ display: none !important; }
+.page{ display: flex; flex-direction: column; gap: 20px; }
+
+/* ---- HOME ---- */
+.hero-panel{
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 24px;
+  align-items: center;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
+  padding: 28px;
+}
+/* DINONAKTIFKAN: @media (max-width: 720px){ .hero-panel{ grid-template-columns: 1fr; } } */
+
+.hero-visual{
+  width: 100%; aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(123,243,243,0.35), rgba(9,46,51,0.9) 70%);
+  border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+}
+.hero-play{ width: 42px; height: 42px; color: var(--cyan-bright); }
+
+.hero-eyebrow{
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--cyan);
+  margin-bottom: 8px;
+}
+.hero-title{
+  margin: 0 0 10px;
+  font-size: clamp(20px, 2vw, 20px);
+  line-height: 1.25;
+  color: var(--text-hi);
+}
+.hero-arrow{ color: var(--amber); }
+.hero-desc{ margin: 0 0 18px; color: var(--text-mid); font-size: 14px; line-height: 1.6; max-width: 60ch; }
+.hero-actions{ display: flex; gap: 10px; flex-wrap: wrap; }
+
+.home-grid{
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+}
+/* DINONAKTIFKAN: @media (max-width: 820px){ .home-grid{ grid-template-columns: 1fr; } } */
+
+
+/* ============================================================ */
+/* STYLING HOME: VIDEO PENGANTAR & AKSI */
+/* ============================================================ */
+
+/* Kontainer pembungkus agar tata letak bagian home rapi */
+.about-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Panel utama video pengantar di paling atas */
+.video-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 24px; /* Memberikan jarak dengan elemen about-container di bawahnya */
+}
+
+/* Tombol thumbnail video */
+.video-thumb {
+  position: relative;
+  width: 100%;           /* Mempertahankan lebar penuh yang sudah pas */
+  max-height: 300px;     /* Membatasi tinggi maksimal agar tidak terlalu panjang ke bawah */
+  aspect-ratio: 21/9;    /* Membuat proporsi video lebih pipih/lanskap */
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--line-strong, rgba(255, 255, 255, 0.15));
+  background: 
+    radial-gradient(circle at 50% 40%, rgba(53, 214, 214, 0.16), transparent 60%),
+    linear-gradient(160deg, #0f4247, #051c1e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Efek cahaya latar video */
+.video-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(53, 214, 214, 0.18), transparent 65%);
+  opacity: 0.7;
+}
+
+/* Tombol ikon play di tengah thumbnail */
+.play-icon {
+  position: relative;
+  z-index: 1;
+  width: 50px; 
+  height: 50px;
+  border-radius: 50%;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0d5c5f;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5), var(--glow-cyan-md, 0 0 15px rgba(53, 214, 214, 0.4));
+  transition: transform 0.15s ease;
+}
+
+.play-icon svg { 
+  width: 24px; 
+  height: 24px; 
+  margin-left: 3px; 
+}
+
+.video-thumb:hover .play-icon { 
+  transform: scale(1.06); 
+}
+
+.video-thumb.playing .play-icon { 
+  background: var(--cyan-bright, #35d6d6); 
+}
+
+/* Keterangan di bawah video */
+.video-caption {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-dim, rgba(255, 255, 255, 0.6));
+  text-align: center;
+}
+
+/* Aksi tombol di dalam hero panel */
+.home-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.home-action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: var(--panel-bg, #0b292c);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-lg, 16px);
+  color: var(--text-hi, #ffffff);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+  box-shadow: var(--shadow-panel, 0 4px 20px rgba(0,0,0,0.25));
+}
+
+.home-action-btn:hover { 
+  border-color: var(--cyan, #35d6d6); 
+  box-shadow: var(--glow-cyan-sm, 0 0 10px rgba(53, 214, 214, 0.25)); 
+}
+
+.home-action-btn:active { 
+  transform: translateY(1px); 
+}
+
+.home-action-btn svg { 
+  width: 26px; 
+  height: 26px; 
+  color: var(--cyan-bright, #35d6d6); 
+}
+
+.home-action-btn span { 
+  font-size: 12px; 
+  font-weight: 600; 
+}
+
+/* Mengatur wadah home-grid menjadi 2 kolom (Kiri: Peta, Kanan: Teks) */
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: stretch;
+}
+
+/* Memastikan kedua panel di dalam grid memiliki tinggi penuh yang sama */
+.home-grid > .panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Style peta yang sudah ada tetap dipertahankan */
+.map-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.map-header-row .panel-title {
+  margin-bottom: 0;
+}
+
+.map-external-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-sm, 6px);
+  white-space: nowrap;
+}
+
+.map-embed {
+  width: 100%; 
+  aspect-ratio: 18/7;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-panel);
+}
+
+.map-embed iframe {
+  width: 100%; 
+  height: 100%;
+  border: 0;
+  display: block;
+  filter: saturate(0.9) contrast(1.05);
+}
+
+.map-embed #mapEmbed {
+  width: 100%;
+  height: 100%;
+  filter: saturate(0.9) contrast(1.05);
+}
+
+/* Style teks yang sudah ada tetap dipertahankan */
+.home-text { 
+  color: var(--text-mid); 
+  font-size: 13.5px; 
+  line-height: 1.7; 
+  margin: 0 0 12px; 
+}
+
+.home-text:last-child { 
+  margin-bottom: 0; 
+}
+
+/* DINONAKTIFKAN (lihat catatan di atas):
+@media (max-width: 900px) {
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+}
+*/
+
+/* Styling untuk panel "Tentang Aplikasi" di paling bawah */
+.home-about-panel {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Pastikan judul panel bawah memiliki jarak yang pas */
+.home-about-panel .panel-title {
+  margin-bottom: 12px;
+}
+
+
+/* ---- SET RADIO (FULLSCREEN DEFAULT) ---- */
+.radio-console{
+  display: grid;
+  /* Default: Sidebar tersembunyi di luar grid, radio-main mengambil 1 layar penuh (1fr) */
+  grid-template-columns: 0 1fr;
+  gap: 0;
+  align-items: start;
+  transition: grid-template-columns 0.3s ease, gap 0.3s ease;
+  width: 100%;
+}
+
+/* Ketika sidebar dibuka lewat JS (menambahkan class .sidebar-open pada .radio-console) */
+.radio-console.sidebar-open{
+  grid-template-columns: 380px 1fr;
+  gap: 18px;
+}
+
+/* DINONAKTIFKAN (lihat catatan di atas):
+@media (max-width: 880px){
+  .radio-console.sidebar-open{
+    grid-template-columns: 1fr;
+  }
+}
+*/
+
+.radio-sidebar{
+  background: var(--bg-panel);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  /* Efek transisi saat sidebar muncul/tutup */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-20px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+.radio-console.sidebar-open .radio-sidebar{
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.radio-sidebar.collapsed .sidebar-body{ display: none; }
+
+.sidebar-toggle{
+  display: none; 
+}
+
+.sidebar-body{ padding: 18px; display: flex; flex-direction: column; gap: 18px; }
+
+.fbw-tabs{ display: flex; gap: 6px; }
+.fbw-tab{
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-panel-2);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.fbw-tab.active{
+  background: var(--cyan-dim);
+  color: var(--text-hi);
+  border-color: var(--line-strong);
+}
+
+.fbw-panel[hidden]{ display: none !important; }
+.fbw-panel-static{ border-top: 1px solid var(--line); padding-top: 16px; }
+
+.rtltcp-status-row{
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-mid);
+  margin: 8px 0 12px;
+}
+.rtltcp-status-row .dot{
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 8px rgba(255,95,95,0.6);
+}
+.rtltcp-status-row .dot.online{
+  background: var(--green);
+  box-shadow: 0 0 8px rgba(87,227,154,0.6);
+}
+.rtltcp-config-grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px 10px;
+}
+.rtltcp-config-grid .manual-label{ margin-top: 4px; }
+
+.radio-main{ 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
+  min-width: 0; 
+  width: 100%;
+}
+
+.radio-toolbar{
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, rgba(15,91,94,0.5), var(--bg-panel));
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-panel);
+}
+.btn-icon-accent{
+  color: var(--bg-deep);
+  background: linear-gradient(160deg, var(--cyan-bright), var(--cyan-dim));
+  border-color: var(--cyan-bright);
+  box-shadow: 0 0 16px rgba(63,224,224,0.35);
+}
+.toolbar-freq-readout{
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--cyan-bright);
+  text-shadow: 0 0 18px rgba(63,224,224,0.45);
+  margin-left: 4px;
+  letter-spacing: 0.01em;
+}
+.toolbar-freq-unit{ font-size: 13px; color: var(--text-dim); font-weight: 500; }
+.radio-toolbar .status-pill{ margin-left: auto; }
+
+.scope-row{
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.scope-wrap{
+  flex: 1;
+  min-width: 0;
+  background: radial-gradient(1200px 300px at 50% -10%, rgba(63,224,224,0.06), transparent), #030b0c;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  box-shadow: var(--shadow-panel), 0 0 0 1px rgba(63,224,224,0.06) inset;
+}
+
+.scope-canvas{
+  width: 100%;
+  /* PERBAIKAN BUG: sebelumnya canvas ini TIDAK punya height CSS sama
+     sekali -- hanya width:100%. Untuk elemen <canvas> (replaced element),
+     kalau height CSS = auto sedangkan width dipaksa 100%, tinggi yang
+     dirender di layar dihitung dari RASIO atribut width/height milik
+     kanvas itu sendiri (mis. 300x100 = rasio 3:1). Masalahnya,
+     resizeScopeCanvases() di script.js MENGUBAH atribut width/height itu
+     terus-menerus (untuk penajaman devicePixelRatio) -- kalau fungsi itu
+     sempat jalan sesaat saat panel Set Radio TERSEMBUNYI (clientWidth=0,
+     jadi jatuh ke nilai default sembarang), rasio yang tersimpan jadi
+     salah/tidak proporsional. Begitu panel tampil lagi, tinggi kanvas
+     dihitung ulang dari rasio yang sudah rusak itu -- inilah sebabnya
+     waterfall/spektrum tiba-tiba tampil jauh lebih besar dari biasanya.
+     Fix: beri height TETAP di CSS supaya ukuran tampilan kanvas SELALU
+     independen dari atribut width/height (yang cuma mengatur resolusi
+     gambar internal, bukan ukuran di layar). Ubah nilai di bawah kalau
+     ingin tampilan lebih tinggi/pendek -- ini murni properti desain. */
+  height: 220px;
+  display: block;
+  border-radius: 8px;
+  cursor: crosshair;
+  box-shadow: 0 0 0 1px rgba(88,214,214,0.14) inset;
+}
+.waterfall-canvas{ margin-top: 2px; }
+
+/* Bilah skala frekuensi (ruler) ala tampilan SDR pada umumnya: gradasi abu-abu
+   metalik dengan garis-garis takik (tick) naik-turun + label MHz halus,
+   ditaruh di atas grafik spektrum & waterfall -- sama seperti pada gambar
+   referensi yang dikirim user. */
+.scale-canvas{
+  height: 34px;
+  margin-bottom: 2px;
+  cursor: default;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 0 0 1px rgba(88,214,214,0.14) inset;
+}
+.scope-freq-axis{
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--cyan-dim);
+  margin-top: 8px;
+  padding: 0 4px;
+}
+#axisCenter{ color: var(--cyan-bright); font-weight: 700; }
+
+.panel-split-vertical .split-pane{ min-height: 140px; }
+
+/* ============================================================
+   VOLUME CONTROL (toolbar Set Radio, di samping tombol play)
+   ============================================================ */
+.volume-control{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.volume-icon{
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cyan-bright);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.15s ease;
+}
+.volume-icon:hover{ background: rgba(63,224,224,0.14); }
+.volume-icon svg{ width: 19px; height: 19px; }
+.volume-icon .vol-wave{ transition: opacity 0.1s ease; }
+.volume-icon.muted{ color: var(--text-dim); }
+.volume-icon.muted .vol-wave{ opacity: 0; }
+
+.volume-slider{
+  width: 96px;
+  height: 5px;
+}
+
+/* DINONAKTIFKAN: @media (max-width: 640px){ .volume-slider{ width: 68px; } } */
+
+/* ============================================================
+   SCOPE CONTROLS — Zoom & Contrast sebagai fader VERTIKAL
+   di samping spektrum (bukan slider horizontal di atas)
+   ============================================================ */
+.scope-controls{
+  width: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column; /* Mengubah susunan menjadi ke bawah */
+  gap: 20px; /* Jarak antar blok kontrol */
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-panel);
+}
+
+.scope-control-block{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  height: 100%;
+}
+
+.scope-control-head{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.scope-control-head .manual-label{ margin-bottom: 0; }
+
+.scope-control-value{
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan-bright);
+}
+
+.scope-control-block .panel-hint{
+  margin: 0;
+  max-width: 82px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Slider vertikal lintas-browser: WebKit pakai appearance khusus,
+   Firefox pakai writing-mode supaya track "naik" ke atas (bukan
+   geser ke samping). */
+.slider-vertical{
+  width: 6px;
+  height: 150px;
+  padding: 0;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  background: linear-gradient(0deg, var(--cyan-dim), var(--cyan) var(--fill, 50%), rgba(255,255,255,0.08) var(--fill, 50%));
+}
+
+/* DINONAKTIFKAN (lihat catatan di atas):
+@media (max-width: 880px){
+  .scope-controls{
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  .slider-vertical{ height: 110px; }
+}
+*/
+
+
+/* ============================================================ */
+/* PENYESUAIAN HALAMAN AUTO TRANSLATE & PANEL VERTIKAL */
+/* ============================================================ */
+/* Memastikan panel split vertikal selebar kontainer */
+.panel-split-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Memperpanjang textarea dan memastikan ukurannya pas penuh selebar kontainer */
+.panel-split-vertical .textarea-readout {
+  min-height: 190px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Memastikan setiap pane di dalam split vertikal mengambil lebar penuh */
+.panel-split-vertical .split-pane {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Mengatur posisi divider/panah agar tetap rapi di tengah */
+.panel-split-vertical .split-divider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0;
+  width: 100%;
+}
+
+.panel-split-vertical .split-divider .divider-icon {
+  transform: rotate(90deg);
+}
+/* Penyesuaian khusus untuk area teks readout agar nyaman dibaca secara vertikal */
+.panel-split-vertical .textarea-readout {
+  min-height: 160px;
+}
+
+/* Memastikan Log / Console di luar kolom kanan tampil full width dengan jarak yang rapi */
+.page-translate .panel-log {
+  width: 100%;
+  margin-top: 0; /* Jarak sudah diatur melalui gap pada .page */
+  box-sizing: border-box;
+}
