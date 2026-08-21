@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radio RTI Group — Auto Translate Bahasa Papua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div id="scaleOuter">
+<div id="scaleInner">
+
+<div class="scanlines" aria-hidden="true"></div>
+
+<header class="app-header">
+  <div class="header-title-row">
+    <div class="brand-mark" aria-hidden="true">
+      <!-- Mengganti SVG dengan tag <img> untuk file JPEG/PNG -->
+      <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Logo Radio RTI Group" class="brand-logo-img">
+    </div>
+    <div class="brand-text">
+      <span class="brand-title">Radio RTI Group</span>
+      <span class="brand-subtitle">Auto Translate Bahasa Papua</span>
+    </div>
+    <div class="brand-status">
+      <span class="brand-dot" id="brandDot" title="Status backend"></span>
+      <span class="brand-label" id="brandLabel">TRANSLATE</span>
+    </div>
+  </div>
+
+  <nav class="top-nav-bar" role="tablist" aria-label="Navigasi halaman">
+    <button type="button" class="nav-home" id="navHomeBtn" role="tab" aria-selected="true" title="Home" aria-label="Home">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="nav-pill" id="navSetRadioBtn" role="tab" aria-selected="false">Set Radio</button>
+    <button type="button" class="nav-pill" id="navTranslateBtn" role="tab" aria-selected="false">Auto Translate</button>
+  </nav>
+</header>
+
+<main class="pages-wrap">
+<!-- ============================================================ -->
+<!-- PAGE: HOME -->
+<!-- ============================================================ -->
+<section class="page page-home active" id="pageHome" role="tabpanel">
+
+  <!-- Panel Video Pengantar di Paling Atas -->
+  <div class="panel video-panel">
+   <div class="video-thumb" id="videoThumbContainer">
+      <!-- Isi VIDEO_SRC di script.js (konstanta INTRO_VIDEO_URL) dengan path video Anda,
+           misalnya '/static/intro.mp4'. Selama kosong, tombol play akan menampilkan
+           pesan yang jelas alih-alih mencoba memuat file yang tidak ada (mencegah 404). -->
+      <video id="myCustomVideo" controls preload="none" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+        Browser Anda tidak mendukung tag video.
+      </video>
+
+      <!-- Tombol & Ikon Play bawaan (akan disembunyikan otomatis jika video diputar) -->
+      <button class="video-play-trigger" id="videoPlayBtn" type="button" aria-label="Putar video pengantar" style="position: absolute; inset: 0; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2;">
+        <span class="video-glow" aria-hidden="true"></span>
+        <span class="play-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 5v14l12-7L7 5z" fill="currentColor"/></svg>
+        </span>
+      </button>
+    </div>
+    
+    <p class="video-caption" id="videoCaption">Video pengantar Papua</p>
+  </div>
+  
+<div class="about-container">
+
+  <!-- 2. Grid 2 Kolom: Kiri Peta, Kanan Tentang Bahasa Papua -->
+  <div class="home-grid">
+    <div class="panel home-map-panel">
+      <div class="map-header-row">
+        <h2 class="panel-title">Wilayah Papua</h2>
+        <a href="https://www.google.com/maps/search/maps+kepulauan+biak+dan+kepulauan+ambai+papua/@-1.7653122,135.8182942,9z?entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm map-external-btn">
+          Lihat Peta ↗
+        </a>
+      </div>
+       
+      <div class="map-embed">
+        <div id="mapEmbed" role="img" aria-label="Peta dua titik: Kepulauan Ambai dan Kepulauan Biak, Papua, dengan garis merah putus-putus mengelilingi masing-masing pulau"></div>
+      </div>
+      <p class="panel-hint" style="margin-top:10px;">Peta wilayah Papua Barat, Pulau Ambai Kabupaten Serui, dan Pulau Biak Kabupaten Distrik Biak Kota.</p>
+    </div>
+
+    <div class="panel home-text-panel">
+      <h2 class="panel-title">Tentang Bahasa Papua</h2>
+      <p class="home-text">Bahasa Papua merupakan rumpun bahasa daerah yang sangat beragam, digunakan oleh ratusan suku asli yang mendiami wilayah pesisir hingga pedalaman Provinsi Papua. Salah satunya adalah Bahasa Ambai, dituturkan oleh komunitas di sepanjang pesisir Teluk Wondama dan sekitarnya.</p>
+      <p class="home-text">Kekayaan bahasa ini memiliki puluhan dialek dan cabang tutur berbeda, sebagian besar tergolong rumpun Austronesia dan Non-Austronesia. Keberagaman bahasa yang sangat melimpah ini turut menjaga identitas tutur unik yang mencerminkan pluralitas warisan budaya setempat.</p>
+    </div>
+  </div>
+
+  <!-- 3. Panel Tentang Aplikasi di Paling Bawah (Lebar Penuh) -->
+  <div class="panel home-about-panel">
+    <h2 class="panel-title">Tentang Aplikasi</h2>
+    <p class="home-text">Penerjemah Bahasa Papua adalah platform berbasis AI yang dirancang untuk mengubah suara maupun teks dalam Bahasa Papua menjadi Bahasa Indonesia secara cepat, akurat, dan mudah digunakan. Mendukung berbagai sumber masukan, mulai dari radio, file audio, hingga teks, aplikasi ini membantu proses komunikasi, dokumentasi, dan pelestarian bahasa daerah dalam satu platform yang terintegrasi.</p>
+  </div>
+
+</div>
+
+</section>
+
+<!-- ============================================================ -->
+<!-- PAGE: SET RADIO -->
+<!-- ============================================================ -->
+<section class="page page-setradio" id="pageSetRadio" role="tabpanel" hidden>
+
+  <div class="radio-console">
+
+    <!-- Sidebar Frekuensi/Bandwidth -->
+    <aside class="radio-sidebar" id="radioSidebar">
+      <button type="button" class="sidebar-toggle" id="sidebarToggleBtn" title="Sembunyikan/tampilkan panel" aria-label="Sembunyikan/tampilkan panel">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+
+      <div class="sidebar-body" id="sidebarBody">
+        <div class="fbw-tabs">
+          <button type="button" class="fbw-tab active" id="tabFrekuensiBtn" data-tab="frekuensi">FREKUENSI</button>
+          <button type="button" class="fbw-tab" id="tabBandwidthBtn" data-tab="bandwidth">BANDWIDTH</button>
+        </div>
+
+        <!-- FREKUENSI -->
+        <div class="fbw-panel" id="panelFreq" data-tab-panel="frekuensi">
+          <div class="readout">
+            <span class="readout-value" id="freqMHz">155.700000</span>
+            <span class="readout-unit">MHz</span>
+          </div>
+          <div class="readout-sub" id="freqHz">155 700 000 Hz</div>
+
+          <div class="slider-wrap">
+            <input type="range" id="freqSlider" class="slider" min="100000000" max="500000000" step="1000" value="155700000">
+            <div class="slider-scale"><span>100 MHz</span><span>500 MHz</span></div>
+          </div>
+
+          <div class="nudge-row">
+            <button type="button" class="btn btn-nudge" data-freq-step="-1000000">− 1 MHz</button>
+            <button type="button" class="btn btn-nudge" data-freq-step="-25000">− 25 kHz</button>
+            <button type="button" class="btn btn-nudge" data-freq-step="25000">+ 25 kHz</button>
+            <button type="button" class="btn btn-nudge" data-freq-step="1000000">+ 1 MHz</button>
+          </div>
+
+          <div class="manual-row">
+            <label class="manual-label" for="freqManual">Set manual (MHz)</label>
+            <div class="manual-input-group">
+              <input type="text" id="freqManual" class="input" placeholder="mis. 100.000" inputmode="decimal">
+              <button type="button" class="btn btn-set" id="freqSetBtn">Set</button>
+            </div>
+          </div>
+
+          <div class="preset-block">
+            <span class="preset-label">Preset</span>
+            <div class="preset-row" id="freqPresets">
+              <button type="button" class="chip" data-freq="100000000">100.000</button>
+              <button type="button" class="chip active" data-freq="155700000">155.700</button>
+              <button type="button" class="chip" data-freq="162000000">162.000</button>
+              <button type="button" class="chip" data-freq="300000000">300.000</button>
+              <button type="button" class="chip" data-freq="433920000">433.920</button>
+              <button type="button" class="chip" data-freq="500000000">500.000</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BANDWIDTH -->
+        <div class="fbw-panel" id="panelBw" data-tab-panel="bandwidth" hidden>
+          <div class="readout readout-with-mode">
+            <div>
+              <span class="readout-value" id="bwValue">12.50</span>
+              <span class="readout-unit">kHz</span>
+            </div>
+            <label class="mode-select-wrap">
+              <span class="mode-select-label">Mode</span>
+              <select id="modeSelect" class="mode-select">
+                <option value="FM" selected>FM</option>
+                <option value="AM">AM</option>
+                <option value="USB">USB</option>
+                <option value="LSB">LSB</option>
+                <option value="NFM">NFM</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="slider-wrap">
+            <input type="range" id="bwSlider" class="slider" min="2500" max="200000" step="100" value="12500">
+            <div class="slider-scale"><span>2.5 kHz</span><span>200 kHz</span></div>
+          </div>
+
+          <div class="manual-row">
+            <label class="manual-label" for="bwManual">Set manual (kHz)</label>
+            <div class="manual-input-group">
+              <input type="text" id="bwManual" class="input" placeholder="mis. 12.5" inputmode="decimal">
+              <button type="button" class="btn btn-set" id="bwSetBtn">Set</button>
+            </div>
+          </div>
+
+          <div class="preset-block">
+            <span class="preset-label">Preset BW</span>
+            <div class="preset-row" id="bwPresets">
+              <button type="button" class="chip" data-bw="2500">2.5k</button>
+              <button type="button" class="chip" data-bw="6000">6.0k</button>
+              <button type="button" class="chip active" data-bw="12500">12.5k</button>
+              <button type="button" class="chip" data-bw="25000">25k</button>
+              <button type="button" class="chip" data-bw="50000">50.0k</button>
+              <button type="button" class="chip" data-bw="100000">100k</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KONEKSI rtl_tcp -->
+        <div class="fbw-panel fbw-panel-static">
+          <span class="preset-label">Sumber Spektrum (rtl_tcp)</span>
+          <div class="rtltcp-status-row">
+            <span class="dot" id="rtltcpDot"></span>
+            <span id="rtltcpStatusText">Belum tersambung</span>
+          </div>
+          <div class="rtltcp-config-grid">
+            <label class="manual-label" for="rtltcpHost">Host</label>
+            <input type="text" id="rtltcpHost" class="input" value="127.0.0.1">
+            <label class="manual-label" for="rtltcpPort">Port</label>
+            <input type="text" id="rtltcpPort" class="input" value="1234" inputmode="numeric">
+          </div>
+          <div class="btn-pair" style="margin-top:10px;">
+            <button type="button" class="btn btn-secondary" id="rtltcpStopBtn">Berhenti</button>
+            <button type="button" class="btn btn-primary" id="rtltcpApplyBtn">Sambungkan</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+    
+  <!-- Spektrum + Waterfall (Tampil Full Screen secara default) -->
+  <div class="radio-main">
+    <div class="radio-toolbar">
+      <button type="button" class="btn btn-icon" id="sidebarToggleBtnTop" title="Panel Frekuensi/Bandwidth" aria-label="Panel Frekuensi/Bandwidth">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button type="button" class="btn btn-icon btn-icon-accent" id="spectrumToggleBtn" title="Mulai/Hentikan spektrum" aria-label="Mulai/Hentikan spektrum">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 5v14l12-7L7 5z" fill="currentColor"/></svg>
+      </button>
+
+      <!-- Kontrol Volume: logo speaker + bar volume, di samping tombol play -->
+      <div class="volume-control" title="Volume">
+        <button type="button" class="volume-icon" id="volumeIcon" aria-label="Bisukan/aktifkan suara">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 9v6h4l5 5V4L8 9H4Z" fill="currentColor"/>
+            <path class="vol-wave" d="M16.2 8.6a5 5 0 0 1 0 6.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path class="vol-wave" d="M18.6 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <input type="range" id="volumeSlider" class="slider volume-slider" min="0" max="100" step="1" value="100" aria-label="Volume">
+      </div>
+
+      <div class="toolbar-freq-readout">
+        <span id="toolbarFreqValue">153.700000</span> <span class="toolbar-freq-unit">MHz</span>
+      </div>
+      <span class="status-pill" id="spectrumStatusPill">Berhenti</span>
+    </div>
+
+    <div class="scope-row">
+      <div class="scope-wrap">
+        <canvas id="scaleCanvas" class="scope-canvas scale-canvas" height="34"></canvas>
+        <canvas id="spectrumCanvas" class="scope-canvas" height="100"></canvas>
+        <canvas id="waterfallCanvas" class="scope-canvas waterfall-canvas" height="100"></canvas>
+        <div class="scope-freq-axis" id="scopeFreqAxis">
+          <span id="axisMin">—</span><span id="axisCenter">—</span><span id="axisMax">—</span>
+        </div>
+      </div>
+
+<aside class="scope-controls" aria-label="Kontrol tampilan spektrum">
+  <!-- Blok Zoom -->
+  <div class="scope-control-block">
+    <div class="scope-control-head">
+      <span class="manual-label">Zoom</span>
+      <span class="scope-control-value" id="zoomValue">1.0x</span>
+    </div>
+    <input type="range" id="zoomSlider" class="slider slider-vertical" min="1" max="200" step="0.5" value="1">
+  </div>
+
+  <!-- Blok Contrast dipindah ke bawah Zoom -->
+  <div class="scope-control-block">
+    <div class="scope-control-head">
+      <span class="manual-label">Contrast</span>
+      <span class="scope-control-value" id="contrastValue">1.0x</span>
+    </div>
+    <input type="range" id="contrastSlider" class="slider slider-vertical" min="0.2" max="3" step="0.1" value="1">
+  </div>
+</aside>
+</section>
+<!-- ============================================================ -->
+<!-- PAGE: AUTO TRANSLATE -->
+<!-- ============================================================ -->
+<section class="page page-translate" id="pageTranslate" role="tabpanel" hidden>
+
+  <div class="console">
+
+    <section class="col col-left">
+      <div class="panel">
+        <h2 class="panel-title">
+          Radio Input Device
+        </h2>
+
+        <div class="device-row">
+          <select id="deviceSelect" class="device-select">
+            <option>Mencari perangkat audio…</option>
+          </select>
+          <button type="button" class="btn btn-icon" id="refreshDevices" title="Segarkan daftar perangkat" aria-label="Segarkan daftar perangkat">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5M4.5 9A8 8 0 0 1 19 8m.5 7A8 8 0 0 1 5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="rms-row">
+          <span class="rms-label"><span class="dot dot-red"></span>RMS Level:</span>
+          <span class="rms-value" id="rmsValue">0.00e+00</span>
+          </label>
+        </div>
+
+        <div class="meter-track">
+          <div class="meter-fill" id="meterFill"></div>
+        </div>
+        <div class="status-row">
+          <span class="status-pill" id="statusPill">Ambai Siap</span>
+        </div>
+
+        <div class="btn-pair">
+          <button type="button" class="btn btn-primary" id="playRadioBtn">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 5v14l12-7L7 5z" fill="currentColor"/></svg>
+            Rekam &amp; Translate Audio
+          </button>
+          <button type="button" class="btn btn-secondary" id="recordSaveBtn">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Rekam &amp; Simpan Audio
+          </button>
+        </div>
+        <button type="button" class="btn btn-secondary btn-block" id="playLastRecordingBtn" hidden style="margin-top:10px;">▶ Putar Audio Papua</button>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">Unggah Audio (WAV / MP3)</h2>
+
+        <div class="file-row">
+          <label class="file-btn" for="audioFile">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Choose File
+          </label>
+          <input type="file" id="audioFile" accept=".wav,.mp3,audio/*" hidden>
+          <span class="file-name" id="fileName">Belum ada berkas dipilih</span>
+        </div>
+
+        <div class="btn-pair">
+          <button type="button" class="btn btn-secondary" id="playUploadBtn">Play Audio Upload</button>
+          <button type="button" class="btn btn-primary" id="uploadTranslateBtn">Upload &amp; Translate Audio</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">Teks Papua → Indonesia</h2>
+        <textarea id="papuaTextInput" class="textarea" placeholder="Ketik teks papua di sini…"></textarea>
+        <button type="button" class="btn btn-primary btn-block" id="translateTextBtn">Translate Text (Papua → Indonesia)</button>
+      </div>
+    </section>
+
+    <section class="col col-right">
+      <div class="panel">
+        <h2 class="panel-title">Pilih Bahasa Papua</h2>
+        <div class="manual-row" style="margin-bottom:10px;">
+          <input type="text" id="papuaLangSearch" class="input" placeholder="Cari & ketik bahasa...">
+        </div>
+        <select id="papuaLangSelect" class="device-select">
+          <option value="ambai" selected>Ambai</option>
+          <option value="biak">Biak</option>
+        </select>
+      </div>
+
+      <div class="panel panel-split panel-split-vertical">
+        <div class="split-pane">
+          <h2 class="panel-title">Input / Whisper (Papua text)</h2>
+          <textarea id="whisperOutput" class="textarea textarea-readout" readonly placeholder="Hasil whisper dari radio atau teks papua…"></textarea>
+          <label class="checkbox-row">
+            <input type="checkbox" id="autoTtsToggle" checked>
+            <span>Auto TTS Indonesia setelah translate</span>
+          </label>
+        </div>
+
+        <div class="split-divider" aria-hidden="true">
+          <span class="divider-icon">⇄</span>
+        </div>
+
+        <div class="split-pane">
+          <h2 class="panel-title">Output Bahasa Indonesia</h2>
+          <textarea id="translationOutput" class="textarea textarea-readout" readonly placeholder="Hasil terjemahan Indonesia…"></textarea>
+          <button type="button" class="btn btn-secondary btn-block" id="playTtsBtn">Play TTS Indonesia (dari text output)</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Log / Console Full Width di Paling Bawah -->
+  <div class="panel panel-log">
+    <div class="log-header">
+      <h2 class="panel-title">Log / Console</h2>
+      <button type="button" class="btn btn-ghost" id="clearLogBtn">Bersihkan</button>
+    </div>
+    <div class="log-box" id="logBox" role="log" aria-live="polite"></div>
+  </div>
+
+</section>
+
+</main>
+
+<audio id="audioPlayer" preload="auto" hidden></audio>
+
+</div><!-- /#scaleInner -->
+</div><!-- /#scaleOuter -->
+
+<script>
+/* ============================================================
+   DESKTOP-SCALE MODE UNTUK MOBILE/HP
+   Tujuan: tampilan di HP (potrait maupun landscape) sama persis
+   dengan tampilan di Windows/desktop -- bukan versi "disusun ulang"
+   yang berbeda layout. Caranya: seluruh isi halaman dipaksa
+   memakai lebar desain desktop (DESIGN_WIDTH), lalu di-"zoom out"
+   (scale) secara proporsional supaya pas dengan lebar layar HP.
+   Di layar yang sudah lebih lebar dari DESIGN_WIDTH (misal laptop/
+   PC), scale otomatis dikembalikan ke 1 (tampilan asli, tidak diubah).
+   ============================================================ */
+(function () {
+  var DESIGN_WIDTH = 1440; // lebar acuan layout desktop (px)
+
+  // Batas skala PALING KECIL yang diizinkan. Tanpa batas ini, di layar
+  // HP yang sangat sempit (mis. potrait), seluruh isi -- termasuk
+  // waterfall/spectrum -- akan ikut mengecil terus mengikuti lebar
+  // layar, jadi jauh lebih kecil dibanding tampilan aslinya di Windows.
+  // Dengan batas ini, begitu skala mentok di angka ini, sisa bagian
+  // yang tidak muat akan di-scroll ke samping (bukan diperkecil lagi),
+  // sehingga ukuran & proporsi tiap elemen tetap terasa sama seperti
+  // di Windows. Naikkan angka ini (mendekati 1) kalau ingin elemen
+  // tampil makin besar (konsekuensinya: makin sering perlu geser ke
+  // samping di HP yang layarnya sempit).
+  var MIN_SCALE = 0.6;
+
+  var outer = document.getElementById('scaleOuter');
+  var inner = document.getElementById('scaleInner');
+  if (!outer || !inner) return;
+
+  var rafId = null;
+
+  function applyScale() {
+    var vw = outer.clientWidth;
+    var rawScale = vw < DESIGN_WIDTH ? (vw / DESIGN_WIDTH) : 1;
+    var scale = Math.max(rawScale, MIN_SCALE);
+    if (scale > 1) scale = 1;
+
+    if (scale < 1) {
+      inner.style.width = DESIGN_WIDTH + 'px';
+      inner.style.transform = 'scale(' + scale + ')';
+    } else {
+      inner.style.width = '';
+      inner.style.transform = '';
+    }
+
+    // Ukur tinggi asli (belum di-scale) lalu sesuaikan tinggi wadah
+    // luar supaya tidak menyisakan ruang kosong di bawah halaman.
+    var naturalHeight = inner.scrollHeight;
+    outer.style.height = (naturalHeight * scale) + 'px';
+  }
+
+  function scheduleApplyScale() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(applyScale);
+  }
+
+  window.addEventListener('resize', scheduleApplyScale);
+  window.addEventListener('orientationchange', function () {
+    setTimeout(applyScale, 300); // beri waktu browser selesai rotasi
+  });
+  window.addEventListener('load', applyScale);
+  document.addEventListener('DOMContentLoaded', applyScale);
+
+  // Konten halaman ini banyak berubah tinggi secara dinamis
+  // (buka/tutup sidebar Set Radio, ganti tab, dsb) -- pantau terus
+  // supaya tinggi wadah luar selalu ikut menyesuaikan.
+  if (window.ResizeObserver) {
+    new ResizeObserver(scheduleApplyScale).observe(inner);
+  }
+
+  applyScale();
+})();
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+/* ============================================================
+   PETA WILAYAH: KEPULAUAN AMBAI & KEPULAUAN BIAK, PAPUA
+   Menampilkan dua titik koordinat, masing-masing dikelilingi
+   garis merah putus-putus (dashed) sesuai permintaan.
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', function () {
+  var mapEl = document.getElementById('mapEmbed');
+  if (!mapEl || typeof L === 'undefined') return;
+
+  var ambaiCoord = [-1.9311, 136.3474]; // Kepulauan Ambai, Kab. Kepulauan Yapen, Papua
+  var biakCoord   = [-1.1667, 136.0833]; // Kepulauan Biak, Kab. Biak Numfor, Papua
+
+  var wilayahMap = L.map(mapEl, {
+    scrollWheelZoom: false
+  }).setView([-1.55, 136.2], 8);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(wilayahMap);
+
+  var dashedRedStyle = {
+    color: '#e53935',
+    weight: 2,
+    dashArray: '6, 6',
+    fillColor: '#e53935',
+    fillOpacity: 0.05
+  };
+
+  // Garis putus-putus merah mengelilingi Kepulauan Ambai
+  L.circle(ambaiCoord, Object.assign({ radius: 15000 }, dashedRedStyle))
+    .addTo(wilayahMap)
+    .bindPopup('Kepulauan Ambai, Papua<br>' + ambaiCoord[0] + ', ' + ambaiCoord[1]);
+
+  // Garis putus-putus merah mengelilingi Kepulauan Biak
+  L.circle(biakCoord, Object.assign({ radius: 30000 }, dashedRedStyle))
+    .addTo(wilayahMap)
+    .bindPopup('Kepulauan Biak, Papua<br>' + biakCoord[0] + ', ' + biakCoord[1]);
+
+  // Titik koordinat (marker) di masing-masing pulau
+  L.marker(ambaiCoord).addTo(wilayahMap)
+    .bindPopup('Kepulauan Ambai<br>Koordinat: ' + ambaiCoord[0] + ', ' + ambaiCoord[1]);
+
+  L.marker(biakCoord).addTo(wilayahMap)
+    .bindPopup('Kepulauan Biak<br>Koordinat: ' + biakCoord[0] + ', ' + biakCoord[1]);
+});
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
